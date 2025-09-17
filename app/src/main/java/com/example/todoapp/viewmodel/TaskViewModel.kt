@@ -8,10 +8,13 @@ import kotlinx.coroutines.flow.StateFlow
 class TaskViewModel: ViewModel() {
     private val repo = TaskRepo()
     val tasks: StateFlow<List<Task>> = repo.tasks
+
+
     fun addTask(title: String){
         if(title.isNotBlank())
         {
             val newTask = Task(id = System.currentTimeMillis().toInt(),title = title)
+            repo.addTask(newTask)
         }
     }
     fun remove(task: Task)

@@ -1,7 +1,11 @@
 package com.example.todoapp.data
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity
 data class Task(
-    val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int= 0,
     val title: String,
     val isCompleted: Boolean = false
 )

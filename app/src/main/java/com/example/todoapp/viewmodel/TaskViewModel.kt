@@ -1,28 +1,46 @@
 package com.example.todoapp.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.viewModelScope
 import com.example.todoapp.data.Task
+import com.example.todoapp.data.database.TodoDatabase
 import com.example.todoapp.data.repo.TaskRepo
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-class TaskViewModel: ViewModel() {
-    private val repo = TaskRepo()
-    val tasks: StateFlow<List<Task>> = repo.tasks
+class TaskViewModel(application: Application): AndroidViewModel(application) {
+    private val getAllTodo: LiveData<List<Task>>
+    private val repository: TaskRepo
 
+    init{
+        val taskDao = TodoDatabase.getDatabase(application).taskDao()
+        repository = TaskRepo(taskDao)
+        getAllTodo = repository.getAllTodo
+    }
 
-    fun addTask(title: String){
-        if(title.isNotBlank())
+    fun getTasks(): LiveData<List<Task>> = getAllTodo
+
+    fun addTask(task:Task){
+        if(task.title.isNotBlank())
         {
-            val newTask = Task(id = System.currentTimeMillis().toInt(),title = title)
-            repo.addTask(newTask)
+            viewModelScope.launch (Dispatchers.IO){
+                repository.addTask(task)
+            }
         }
     }
     fun remove(task: Task)
     {
-        repo.removeTask(task)
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.removeTask(task)
+        }
     }
     fun toggleTaskCompletion(task:Task)
     {
-        repo.toggleTaskComplete(task)
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.toggleTaskComplete(task)
+        }
     }
 }
